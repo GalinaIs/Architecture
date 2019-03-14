@@ -1,0 +1,74 @@
+Примеры антипаттернов в моих проектах:
+1.	Магические числа
+$bot = \Yii::$app->bot;
+$bot->sendMessage(559374237 , 'Из yii с любовью');
+2.	Божественный объект
+В методе ниже было бы целесообразней задать отдельный класс, который бы отвечал за подготовку данных, которые контроллер передает на отрисовку view.
+public function actionItem($id) {
+        $model = Tasks::findOne($id);
+        $user_id = Yii::$app->user->identity->id;
+        $modelComment = new Comments();
+
+        $query = Comments::find()
+            ->where(['task_id' => $id]);
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => [
+                'pageSize' => 6
+            ]
+        ]);
+
+        $labelPage = new TaskLabel();
+        $chatMessage = new Chat([
+            'user_id' => $user_id,
+            'channel' => 'Task_' . $id
+        ]);
+
+        $chatList = Chat::find()
+            ->where(['channel' => 'Task_' . $id])
+            ->all();
+
+        $users = User::find()->all();
+        $usersList = ArrayHelper::map($users, 'id', 'username');
+
+        $status = Status::find()->all();
+        $statusList = ArrayHelper::map($status, 'id', 'name');
+
+        $project = Project::find()->all();
+        $projectList = ArrayHelper::map($project, 'id', 'name');
+
+        return $this->render('item', [
+            'model' => $model,
+            'usersList' => $usersList,
+            'statusList' => $statusList,
+            'user_id' => $user_id,
+            'modelComment' => new Comments(),
+            'dataProvider' => $dataProvider,
+            'labelPage' => $labelPage,
+            'chatMessage' => $chatMessage,
+            'chatList' => $chatList,
+            'projectList' => $projectList
+        ]);
+    }
+3.	Магические числа
+$tasksClosed = Tasks::find()
+            ->where(['and', ['project_id' => $id], 
+                ['and', ['id_status' => 3], new Expression('execution_date >= DATE_SUB(CURRENT_DATE, INTERVAL 7 DAY)')]
+            ]
+        );
+4.	Принцип невероятности или слепая вера
+public function actionItem($id) {
+        $model = Project::findOne($id); - здесь обязательно должна быть проверка, что передаваемое значение int.
+5.	Шифрованный код и магические числа
+let a = 2;
+let x = 1 + (a *= 2);
+6.	Жесткое кодирование – это нужно вынести в конфиг
+class Db implements IDb {
+    private $config = [
+        'driver' => 'mysql',
+        'host' => 'localhost',
+        'login' => 'root',
+        'password' => '',
+        'database' => 'Shop_Nastasya',
+        'charset' => 'utf8'
+    ];
